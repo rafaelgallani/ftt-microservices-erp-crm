@@ -22,6 +22,9 @@ class QuoteService:
     @rpc
     def get(self, quote_id):
         quote = self.redis.hgetall(quote_id)
+        if 'id' not in quote:
+            return None
+            
         quote['items'] = json.loads(quote['items'])
         quote['customerId'] = int(quote['customerId'])
         quote['deliveryTypeId'] = int(quote['deliveryTypeId'])
