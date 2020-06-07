@@ -1,0 +1,3 @@
+kombu
+nameko
+nameko-redis

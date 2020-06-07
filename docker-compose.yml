@@ -1,0 +1,65 @@
+version: "2"
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+
+  redis:
+    image: redis:4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: redis
+    volumes:
+      - redis-data:/data
+
+  quotes:
+    build:
+      context: "./"
+      dockerfile: "./quotes/Dockerfile"
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+
+      RABBIT_PASSWORD: "guest"
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbitmq"
+      RABBIT_PORT: "5672"
+  
+  orders:
+    build:
+      context: "./"
+      dockerfile: "./orders/Dockerfile"
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+
+      RABBIT_PASSWORD: "guest"
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbitmq"
+      RABBIT_PORT: "5672"
+
+  gateway:
+    build:
+      context: "./"
+      dockerfile: "./gateway/Dockerfile"
+    depends_on:
+      - rabbitmq
+      - redis
+    ports:
+        - "8000:8000"
+    environment:
+      RABBIT_PASSWORD: "guest"
+      RABBIT_USER: "guest"
+      RABBIT_HOST: "rabbitmq"
+      RABBIT_PORT: "5672"
+
+volumes:
+  redis-data:
+
