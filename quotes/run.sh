@@ -14,3 +14,4 @@ done
 
 echo "nameko"
 nameko run --config config.yml quotes
+ 

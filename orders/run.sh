@@ -11,3 +11,4 @@ until nc -z ${REDIS_HOST} ${REDIS_PORT}; do
 done
 
 nameko run --config config.yml orders
+ 
