@@ -23,27 +23,45 @@ def not_allowed(*args):
     return jsonify({"statusCode": 405, "description": "Invalid method."}), 405
 
 
-@app.route('/quote/', methods=['POST'])
+@app.route('/quote/', methods=['POST', 'GET'])
 def generate_quote():
+    print(request.method)
     try:
         with ClusterRpcProxy(CONFIG) as rpc:
-            quote_data = json.loads(request.get_data(as_text=True))
-            data = PricingService(quote_data)
-            quote_json = json.dumps(data, default=lambda x: x.__dict__)
+            if request.method == 'POST':
+                quote_data = json.loads(request.get_data(as_text=True))
 
-            quote_id = rpc.quote_service.create(quote_json)
-            data.id = quote_id
+                data = PricingService(quote_data)
+                quote_json = json.dumps(data, default=lambda x: x.__dict__)
 
-            response = {
-                "success": True,
-                "data": data,
-            }
+                quote_id = rpc.quote_service.create(quote_json)
+                data.id = quote_id
 
-            return Response(
-                json.dumps(response, default=lambda x: x.__dict__),
-                mimetype='application/json',
-                status=201
-            )    
+                response = {
+                    "success": True,
+                    "data": data,
+                }
+
+                return Response(
+                    json.dumps(response, default=lambda x: x.__dict__),
+                    mimetype='application/json',
+                    status=201
+                )    
+            else:
+                quotes = rpc.quote_service.get_all()
+                return Response(
+                    json.dumps(quotes, default=lambda x: x.__dict__),
+                    mimetype='application/json',
+                    status=200
+                )
+    except Exception as e:
+        return Response(
+            json.dumps({
+                "error": "Unexpected exception occurred: {}".format(str(e))
+            }, default=lambda x: x.__dict__),
+            mimetype='application/json',
+            status=500
+        )    
     except Exception as e:
         return Response(
             json.dumps({
@@ -53,11 +71,10 @@ def generate_quote():
             status=500
         )    
 
-
 @app.route('/quote/<string:quote_id>', methods=['GET'])
 def get_quote(quote_id):
     try:
-        with ClusterRpcProxy(CONFIG) as rpc:
+        with ClusterRpcProxy(CONFIG) as rpc: 
             quote = rpc.quote_service.get(quote_id)
             if quote:
                 return Response(
@@ -82,7 +99,14 @@ def get_quote(quote_id):
             status=500
         )
 
+       
+@app.route('/', methods=['GET'])
+def get_home():
+    return Response(
+        json.dumps({"success": True}, default=lambda x: x.__dict__),
+        mimetype='application/json',
+        status=200
+    )
 
 if __name__ == "__main__":
-    """Start Flask app to serve mircoservices"""
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=8000)
