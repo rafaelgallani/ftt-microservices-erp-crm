@@ -24,6 +24,8 @@ target_exchange = Exchange(os.getenv('MESSAGE_BUS_NAME', 'erp_message_bus'), cha
 producer = channel.Producer(serializer='json', exchange=target_exchange)
 order_routing_key = os.getenv('FIRED_EVENT_ROUTING_KEY', 'createdOrderEvent')
 
+RECORD_TYPE = 'quote'
+
 class QuoteService:
     name = "quote_service"
     redis = Redis('development')
@@ -34,6 +36,11 @@ class QuoteService:
         quote = self.redis.hgetall(quote_id)
         if 'id' not in quote:
             return None
+
+        try:
+            record_type = quote.pop('type')
+        except KeyError as e:
+            pass
             
         quote['items'] = json.loads(quote['items'])
         quote['customerId'] = int(quote['customerId'])
@@ -47,9 +54,13 @@ class QuoteService:
         quote_as_dict = json.loads(quote_json)
         quote_as_dict['id'] = quote_id
         quote_as_dict['items'] = json.dumps(quote_as_dict['items'])
-        quote_as_dict['status'] = 'pending'
+        quote_as_dict['status'] = 'Pending'
+        
+        quote_as_dict['type'] = RECORD_TYPE
         
         self.redis.hmset(quote_id, quote_as_dict)
+
+        quote_as_dict.pop('type')
 
         created_order_message = target_exchange.Message(quote_as_dict)
 
@@ -60,6 +71,21 @@ class QuoteService:
     
     @rpc
     def get_all(self):
-        print(self.config.get('AMQP_URI'))
-        keys = self.redis.keys()
-        return keys
+        records = []
+        for key in self.redis.keys():
+            record = self.redis.hgetall(key)
+
+            if record.type == RECORD_TYPE:
+                try:
+                    record['items'] = json.loads(record['items'])
+                except KeyError as e:
+                    pass
+
+                try:
+                    record.pop('type')
+                except KeyError as e:
+                    pass
+                
+                records.append(record)
+                
+        return records
