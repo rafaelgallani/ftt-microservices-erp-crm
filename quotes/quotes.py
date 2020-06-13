@@ -12,27 +12,22 @@ from pricing_service import PricingService
 
 from nameko.dependency_providers import Config
 
-channel = Connection('amqp://guest:guest@rabbitmq:5672//')
-target_exchange = Exchange('erp_message_bus', channel=channel)
+amqp_uri = 'amqp://{RABBIT_USER}:{RABBIT_PASSWORD}@{RABBIT_HOST}:{RABBIT_PORT}/'.format(
+    RABBIT_USER=os.getenv('RABBIT_USER', 'guest'),
+    RABBIT_PASSWORD=os.getenv('RABBIT_PASSWORD', 'guest'),
+    RABBIT_HOST=os.getenv('RABBIT_HOST', 'rabbitmq'),
+    RABBIT_PORT=os.getenv('RABBIT_PORT', '5672'),
+)
+channel = Connection(amqp_uri)
+target_exchange = Exchange(os.getenv('MESSAGE_BUS_NAME', 'erp_message_bus'), channel=channel)
 
 producer = channel.Producer(serializer='json', exchange=target_exchange)
-order_routing_key = 'createdOrderEvent'
-print(os.getenv('AMQP_URI'))
-
+order_routing_key = os.getenv('FIRED_EVENT_ROUTING_KEY', 'createdOrderEvent')
 
 class QuoteService:
     name = "quote_service"
     redis = Redis('development')
     config = Config()
-
-    print('vai tomar no cu')
-    print('vai tomar no cu')
-    print('vai tomar no cu')
-    print('vai tomar no cu')
-    print('vai tomar no cu')
-    print('vai tomar no cu')
-
-    
 
     @rpc
     def get(self, quote_id):
