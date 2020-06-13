@@ -24,6 +24,8 @@ services:
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
 
+      FIRED_EVENT_NAME: "createdOrderEvent"
+      MESSAGE_BUS_NAME: "erp_message_bus"
       RABBIT_PASSWORD: "guest"
       RABBIT_USER: "guest"
       RABBIT_HOST: "rabbitmq"
