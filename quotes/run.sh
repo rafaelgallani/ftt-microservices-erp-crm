@@ -12,6 +12,6 @@ until nc -z ${REDIS_HOST} ${REDIS_PORT}; do
     sleep 1
 done
 
-echo "nameko"
+echo "Quote service started."
 nameko run --config config.yml quotes
- 
+echo "Quote service stopped."

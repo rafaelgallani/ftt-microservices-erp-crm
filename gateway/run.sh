@@ -5,7 +5,6 @@ until nc -z ${RABBIT_HOST} ${RABBIT_PORT}; do
     sleep 1
 done
 
-#nameko run --config config.yml gateway
-
+echo "Gateway running."
 python gateway.py
- 
+echo "Gateway stopped."
