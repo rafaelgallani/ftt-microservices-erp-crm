@@ -75,7 +75,7 @@ class QuoteService:
         for key in self.redis.keys():
             record = self.redis.hgetall(key)
 
-            if record.type == RECORD_TYPE:
+            if 'type' in record and record['type'] == RECORD_TYPE:
                 try:
                     record['items'] = json.loads(record['items'])
                 except KeyError as e:

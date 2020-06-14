@@ -1,3 +1,4 @@
+import os
 import json
 
 from nameko.standalone.rpc import ClusterRpcProxy
@@ -6,9 +7,17 @@ from werkzeug.wrappers import Response
 
 from flask import Flask, request, jsonify
 from pricing_service import PricingService
+from pricing_service import ParsingError
 app = Flask(__name__)
 
-CONFIG = {'AMQP_URI': "amqp://guest:guest@rabbitmq:5672"}
+amqp_uri = 'amqp://{RABBIT_USER}:{RABBIT_PASSWORD}@{RABBIT_HOST}:{RABBIT_PORT}/'.format(
+    RABBIT_USER=os.getenv('RABBIT_USER', 'guest'),
+    RABBIT_PASSWORD=os.getenv('RABBIT_PASSWORD', 'guest'),
+    RABBIT_HOST=os.getenv('RABBIT_HOST', 'rabbitmq'),
+    RABBIT_PORT=os.getenv('RABBIT_PORT', '5672'),
+)
+
+CONFIG = {'AMQP_URI': amqp_uri}
 
 @app.errorhandler(403)
 def unauthorized():
@@ -54,10 +63,10 @@ def generate_quote():
                     mimetype='application/json',
                     status=200
                 )
-    except Exception as e:
+    except ParsingError as e:
         return Response(
             json.dumps({
-                "error": "Unexpected exception occurred: {}".format(str(e))
+                "error": "Parsing error occurred: {}".format(str(e))
             }, default=lambda x: x.__dict__),
             mimetype='application/json',
             status=500
