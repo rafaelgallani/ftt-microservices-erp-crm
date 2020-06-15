@@ -62,7 +62,7 @@ class ParsingError(Exception):
 class Product:
     def __init__(self, item):
         self.productId = item.productId
-        self.price = 10
+        self.price = 100
         self.quantity = item.quantity
 
     @property
