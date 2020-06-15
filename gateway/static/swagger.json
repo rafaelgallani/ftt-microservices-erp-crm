@@ -1,0 +1,223 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Descrição dos serviços disponíveis para o módulo de CRM.",
+    "version": "1.0.0",
+    "title": "CRM - Microservices"
+  },
+  "host": "tccmicroservices.xyz",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Quote",
+      "description": "Serviços disponíveis para as cotações do sistema"
+    }
+  ],
+  "paths": {
+    "/quote": {
+      "post": {
+        "tags": [
+          "Quote"
+        ],
+        "summary": "Adicionar uma nova cotação ao sistema",
+        "description": "",
+        "operationId": "addQuote",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Parâmetros da cotação",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Quote"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Cotação criada com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/QuoteResponse"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Quote"
+        ],
+        "summary": "Detalhes de todas as cotações",
+        "description": "Informações de todas as cotações criadas são exibidas.",
+        "operationId": "getQuote",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de cotações criadas",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quote"
+              }
+            }
+          },
+          "500": {
+            "description": "Exceção não tratada. Erro na descrição"
+          }
+        }
+      }
+    },
+    "/quote/{id}": {
+      "get": {
+        "tags": [
+          "Quote"
+        ],
+        "summary": "Detalhes de uma cotação específica",
+        "description": "Informações da cotação criada são exibidas de acordo com o ID especificado como parâmetro na rota.",
+        "operationId": "getQuoteWithPath",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID da cotação usado na filtragem",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informações sobre a cotação",
+            "schema": {
+              "$ref": "#/definitions/QuoteResponse"
+            }
+          },
+          "404": {
+            "description": "Cotação com o ID especificado não foi encontrada"
+          },
+          "500": {
+            "description": "Exceção não tratada. Erro na descrição"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Order": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "deliveryTypeId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "address": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        }
+      }
+    },
+    "Quote": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "deliveryTypeId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "address": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        }
+      }
+    },
+    "QuoteResponse": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "deliveryTypeId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "address": {
+          "type": "string",
+          "format": "address"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Created"
+          ],
+          "default": "Pending"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        }
+      }
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

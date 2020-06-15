@@ -5,9 +5,11 @@ from nameko.standalone.rpc import ClusterRpcProxy
 from nameko.web.handlers import http
 from werkzeug.wrappers import Response
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, redirect, url_for
 from pricing_service import PricingService
 from pricing_service import ParsingError
+from flask_swagger_ui import get_swaggerui_blueprint
+
 app = Flask(__name__)
 
 amqp_uri = 'amqp://{RABBIT_USER}:{RABBIT_PASSWORD}@{RABBIT_HOST}:{RABBIT_PORT}/'.format(
@@ -24,7 +26,7 @@ def unauthorized():
     return jsonify({"statusCode": 403, "description": "Unauthorized."}), 403
 
 @app.errorhandler(404)
-def not_found():
+def not_found(a):
     return jsonify({"statusCode": 404, "description": "Resource not found."}), 404
 
 @app.errorhandler(405)
@@ -89,7 +91,7 @@ def get_quote(quote_id):
                 return Response(
                     json.dumps(quote, default=lambda x: x.__dict__),
                     mimetype='application/json',
-                    status=200
+                    status=201
                 )
             else:
                 return Response(
@@ -108,14 +110,21 @@ def get_quote(quote_id):
             status=500
         )
 
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
+
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL
+)
+app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
        
 @app.route('/', methods=['GET'])
 def get_home():
-    return Response(
-        json.dumps({"success": True}, default=lambda x: x.__dict__),
-        mimetype='application/json',
-        status=200
-    )
+    return redirect('swagger')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)
