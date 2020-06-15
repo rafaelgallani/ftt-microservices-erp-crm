@@ -34,7 +34,7 @@ def not_found(a):
 def not_allowed(*args):
     return jsonify({"statusCode": 405, "description": "Invalid method."}), 405
 
-@app.route('/quote/', methods=['POST', 'GET'])
+@app.route('/api/crm/quote/', methods=['POST', 'GET'])
 def generate_quote():
     print(request.method)
     try:
@@ -90,7 +90,7 @@ def generate_quote():
             status=500
         )    
 
-@app.route('/quote/<string:quote_id>', methods=['GET'])
+@app.route('/api/crm/quote/<string:quote_id>', methods=['GET'])
 def get_quote(quote_id):
     try:
         with ClusterRpcProxy(CONFIG) as rpc: 
@@ -118,11 +118,11 @@ def get_quote(quote_id):
             status=500
         )
 
-@app.route('/static/<path:path>')
+@app.route('/api/crm/static/<path:path>')
 def send_static(path):
     return send_from_directory('static', path)
 
-SWAGGER_URL = '/swagger'
+SWAGGER_URL = '/api/crm/swagger'
 API_URL = '/static/swagger.json'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
@@ -130,9 +130,9 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
 )
 app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
        
-@app.route('/', methods=['GET'])
+@app.route('/api/crm', methods=['GET'])
 def get_home():
-    return redirect('swagger', code=308)
+    return redirect('/api/crm/swagger', code=308)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)
