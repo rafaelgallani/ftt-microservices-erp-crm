@@ -2,6 +2,7 @@ import os
 import json
 
 from nameko.standalone.rpc import ClusterRpcProxy
+from nameko.exceptions import RemoteError
 from nameko.web.handlers import http
 from werkzeug.wrappers import Response
 
@@ -32,7 +33,6 @@ def not_found(a):
 @app.errorhandler(405)
 def not_allowed(*args):
     return jsonify({"statusCode": 405, "description": "Invalid method."}), 405
-
 
 @app.route('/quote/', methods=['POST', 'GET'])
 def generate_quote():
@@ -69,6 +69,14 @@ def generate_quote():
         return Response(
             json.dumps({
                 "error": "Parsing error occurred: {}".format(str(e))
+            }, default=lambda x: x.__dict__),
+            mimetype='application/json',
+            status=500
+        )    
+    except RemoteError as e:
+        return Response(
+            json.dumps({
+                "error": "Parsing error occurred: {}".format(str(e.value))
             }, default=lambda x: x.__dict__),
             mimetype='application/json',
             status=500
