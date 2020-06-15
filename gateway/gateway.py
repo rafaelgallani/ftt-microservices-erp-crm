@@ -132,7 +132,7 @@ app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
        
 @app.route('/', methods=['GET'])
 def get_home():
-    return redirect('swagger')
+    return redirect('swagger', code=308)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)
