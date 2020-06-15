@@ -58,7 +58,7 @@ class QuoteService:
         quote_as_dict = json.loads(quote_json)
         quote_as_dict['id'] = quote_id
 
-        self.parse_products(quote_as_dict['items'])
+        self.handle_quote_data(quote_as_dict)
 
         quote_as_dict['items'] = json.dumps(quote_as_dict['items'])
         quote_as_dict['status'] = 'Pending'
@@ -87,6 +87,21 @@ class QuoteService:
                     "price": 100
                 })
 
+    def handle_quote_data(self, quote_data)
+        parse_products(quote_data['items'])
+        parse_customer(quote_data)
+        parse_delivery_type(quote_data)
+    
+    def parse_customer(self, quote_data):
+        customer_id = str(quote_data['customerId'])
+        if not self.redis.hgetall('customer_' + customer_id):
+            raise ParsingError('Invalid customer specified: {customer_id}.'.format(customer_id=customer_id))
+    
+    def parse_delivery_type(self, quote_data):
+        delivery_type_id = str(quote_data['deliveryTypeId'])
+        if not self.redis.hgetall('delivery_type_' + delivery_type_id):
+            raise ParsingError('Invalid delivery type specified: {delivery_type_id}.'.format(delivery_type_id=delivery_type_id))
+        
     def parse_products(self, items):
         for index, item in enumerate(items):
             product_id_str = str(item['productId'])
