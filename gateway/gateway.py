@@ -11,6 +11,24 @@ from pricing_service import PricingService
 from pricing_service import ParsingError
 from flask_swagger_ui import get_swaggerui_blueprint
 
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
 app = Flask(__name__)
 
 amqp_uri = 'amqp://{RABBIT_USER}:{RABBIT_PASSWORD}@{RABBIT_HOST}:{RABBIT_PORT}/'.format(
@@ -36,10 +54,13 @@ def not_allowed(*args):
 
 @app.route('/api/crm/quote/', methods=['POST', 'GET'])
 def generate_quote():
-    print(request.method)
+    app.logger.info('Calling {} on path {}'.format(request.method, '/api/crm/quote/'))
     try:
+        app.logger.info('Logging with cluster')
         with ClusterRpcProxy(CONFIG) as rpc:
+            app.logger.info('Cluster passed:')
             if request.method == 'POST':
+                app.logger.info('Create:')
                 quote_data = json.loads(request.get_data(as_text=True))
 
                 data = PricingService(quote_data)
@@ -59,6 +80,7 @@ def generate_quote():
                     status=201
                 )    
             else:
+                app.logger.info('Get all:')
                 quotes = rpc.quote_service.get_all()
                 return Response(
                     json.dumps(quotes, default=lambda x: x.__dict__),
@@ -92,8 +114,11 @@ def generate_quote():
 
 @app.route('/api/crm/quote/<string:quote_id>', methods=['GET'])
 def get_quote(quote_id):
+    app.logger.info('Calling {} on path {}'.format(request.method, '/api/crm/quote/<string:quote_id>'))
     try:
+        app.logger.info('Logging with cluster')
         with ClusterRpcProxy(CONFIG) as rpc: 
+            app.logger.info('Cluster passed:')
             quote = rpc.quote_service.get(quote_id)
             if quote:
                 return Response(
@@ -123,14 +148,14 @@ def send_static(path):
     return send_from_directory('static', path)
 
 SWAGGER_URL = '/api/crm/swagger'
-API_URL = '/static/swagger.json'
+API_URL = '/api/crm/static/swagger.json'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL
 )
 app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
        
-@app.route('/api/crm', methods=['GET'])
+@app.route('/api/crm/', methods=['GET'])
 def get_home():
     return redirect('/api/crm/swagger', code=308)
 

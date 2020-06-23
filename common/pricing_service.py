@@ -49,7 +49,7 @@ class PricingService:
                     if not 'quantity' in item:
                         raise ParsingError('Quantity was not specified in item on index {} [quantity].'.format(index))
             else:
-                raise ParsingError(r'Items are not in the correct format: [{"productId": 1, "quantity": 1}]')
+                raise ParsingError(r'Items are not in the correct format: [{"productId": int32, "quantity": int32}]')
 
 
     @property
