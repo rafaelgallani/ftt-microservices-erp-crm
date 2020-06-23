@@ -13,5 +13,5 @@ until nc -z ${REDIS_HOST} ${REDIS_PORT}; do
 done
 
 echo "Quote service started."
-nameko run --config config.yml quotes
+python quotes.py
 echo "Quote service stopped."
