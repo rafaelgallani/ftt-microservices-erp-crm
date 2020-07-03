@@ -4,6 +4,7 @@ RUN apt-get update && apt-get -y install netcat && apt-get clean
 WORKDIR /app
 
 COPY ./common/pricing_service.py ./
+COPY ./quotes/static/swagger.json ./static/swagger.json
 COPY ./quotes/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
