@@ -1,6 +1,6 @@
-## Nameko microservices
+# TCC - ERP Implementation - Microservices - CRM
 
-Simple microservices example using Nameko.
+ERP module composed by a CRM. API methods are listed on `/api/crm/` via swagger.
 
 
 ## Running
