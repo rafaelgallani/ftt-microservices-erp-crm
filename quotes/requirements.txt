@@ -1,4 +1,4 @@
 kombu
-redis==3.5.3
+redis==4.4.4
 flask
 flask_swagger_ui
